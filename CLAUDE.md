@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 이 프로젝트는 Next.js 16 (App Router)을 사용합니다. 학습 데이터의 Next.js와 API, 컨벤션, 파일 구조가 다를 수 있습니다. 코드 작성 전 `node_modules/next/dist/docs/`의 가이드를 확인하세요.
 
+## UI 가이드
+
+UI 컴포넌트 작성 시 `ui.md`를 참조하세요. 색상 시스템, 컴포넌트 구조, 타이포그래피, 간격, 반응형 원칙이 정의되어 있습니다.
+
 ## 코딩 스타일
 
 - 변수 이름: 카멜 케이스
