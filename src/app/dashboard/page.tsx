@@ -1,13 +1,14 @@
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { db } from "@/db";
-import { newsArticles, categories } from "@/db/schema";
+import { articles, categories, notionSaves } from "@/db/schema";
 import { desc, eq, count } from "drizzle-orm";
 import FetchButton from "./FetchButton";
+import SaveButton from "./SaveButton";
 
 export const dynamic = "force-dynamic";
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 9;
 
 interface Props {
   searchParams: Promise<{ category?: string; page?: string }>;
@@ -19,34 +20,36 @@ export default async function DashboardPage({ searchParams }: Props) {
   const offset = (currentPage - 1) * PAGE_SIZE;
 
   const whereClause = selectedCategoryId
-    ? eq(newsArticles.categoryId, selectedCategoryId)
+    ? eq(articles.categoryId, selectedCategoryId)
     : undefined;
 
   // 카테고리 목록, 기사(페이지), 전체 기사 수를 병렬 조회
-  const [categoryList, articles, [{ total }]] = await Promise.all([
+  const [categoryList, articleList, [{ total }]] = await Promise.all([
     db.select().from(categories).orderBy(categories.name),
     db
       .select({
-        id: newsArticles.id,
-        translatedTitle: newsArticles.translatedTitle,
-        originalTitle: newsArticles.originalTitle,
-        summary: newsArticles.summary,
-        source: newsArticles.source,
-        originalUrl: newsArticles.originalUrl,
-        publishedAt: newsArticles.publishedAt,
-        fetchedAt: newsArticles.fetchedAt,
-        categoryId: newsArticles.categoryId,
+        id: articles.id,
+        translatedTitle: articles.translatedTitle,
+        originalTitle: articles.originalTitle,
+        summary: articles.summary,
+        source: articles.source,
+        originalUrl: articles.originalUrl,
+        publishedAt: articles.publishedAt,
+        fetchedAt: articles.fetchedAt,
+        categoryId: articles.categoryId,
         categoryName: categories.name,
+        notionPageId: notionSaves.notionPageId,
       })
-      .from(newsArticles)
-      .leftJoin(categories, eq(newsArticles.categoryId, categories.id))
+      .from(articles)
+      .leftJoin(categories, eq(articles.categoryId, categories.id))
+      .leftJoin(notionSaves, eq(notionSaves.articleId, articles.id))
       .where(whereClause)
-      .orderBy(desc(newsArticles.fetchedAt))
+      .orderBy(desc(articles.fetchedAt))
       .limit(PAGE_SIZE)
       .offset(offset),
     db
       .select({ total: count() })
-      .from(newsArticles)
+      .from(articles)
       .where(whereClause),
   ]);
 
@@ -110,7 +113,7 @@ export default async function DashboardPage({ searchParams }: Props) {
           </Link>
         </div>
 
-        {articles.length === 0 ? (
+        {articleList.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <p className="text-zinc-400 text-sm mb-4">아직 수집된 뉴스가 없습니다.</p>
           </div>
@@ -118,7 +121,7 @@ export default async function DashboardPage({ searchParams }: Props) {
           <>
             {/* 뉴스 카드 그리드 */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {articles.map((article) => {
+              {articleList.map((article) => {
                 const date = article.publishedAt ?? article.fetchedAt;
                 const dateStr = date.toLocaleDateString("ko-KR", {
                   year: "numeric",
@@ -157,17 +160,23 @@ export default async function DashboardPage({ searchParams }: Props) {
 
                     {/* 출처 + 원문 링크 */}
                     <div className="flex items-center justify-between mt-auto pt-2 border-t border-zinc-100">
-                      <span className="text-xs text-zinc-400 truncate max-w-[60%]">
+                      <span className="text-xs text-zinc-400 truncate max-w-[40%]">
                         {article.source}
                       </span>
-                      <a
-                        href={article.originalUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-zinc-500 hover:text-zinc-900 transition-colors"
-                      >
-                        원문
-                      </a>
+                      <div className="flex items-center gap-3">
+                        <a
+                          href={article.originalUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-zinc-500 hover:text-zinc-900 transition-colors"
+                        >
+                          원문
+                        </a>
+                        <SaveButton
+                          articleId={article.id}
+                          initiallySaved={!!article.notionPageId}
+                        />
+                      </div>
                     </div>
                   </article>
                 );

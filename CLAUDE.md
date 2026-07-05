@@ -75,8 +75,8 @@ src/
 
 ### DB 스키마 관계
 
-- `news_articles.category_id` → `categories.id` (카테고리 삭제 시 `null`로 설정)
-- `notion_saves.article_id` → `news_articles.id` (기사 삭제 시 cascade)
+- `articles.category_id` → `categories.id` (카테고리 삭제 시 `null`로 설정)
+- `notion_saves.article_id` → `articles.id` (기사 삭제 시 cascade)
 
 ### 인증
 
