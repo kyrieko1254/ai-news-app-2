@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import Parser from 'rss-parser'
 import Anthropic from '@anthropic-ai/sdk'
 import { db } from '@/db'
-import { newsArticles, categories } from '@/db/schema'
+import { articles, categories } from '@/db/schema'
 import { inArray } from 'drizzle-orm'
 
 // 모듈 레벨 싱글턴
@@ -82,9 +82,9 @@ export async function POST() {
   // URL 중복 제거 (DB 대조)
   const candidateUrls = [...new Set(candidates.map(c => c.url))]
   const existing = await db
-    .select({ url: newsArticles.originalUrl })
-    .from(newsArticles)
-    .where(inArray(newsArticles.originalUrl, candidateUrls))
+    .select({ url: articles.originalUrl })
+    .from(articles)
+    .where(inArray(articles.originalUrl, candidateUrls))
   const existingSet = new Set(existing.map(r => r.url))
   const newArticles = candidates.filter(a => !existingSet.has(a.url))
 
@@ -160,10 +160,10 @@ ${JSON.stringify(newArticles.map((a, i) => ({
   })
 
   const inserted = await db
-    .insert(newsArticles)
+    .insert(articles)
     .values(insertValues)
     .onConflictDoNothing()
-    .returning({ id: newsArticles.id })
+    .returning({ id: articles.id })
 
   return NextResponse.json({
     inserted: inserted.length,

@@ -7,7 +7,7 @@ export const categories = pgTable('categories', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 })
 
-export const newsArticles = pgTable('news_articles', {
+export const articles = pgTable('articles', {
   id: uuid('id').primaryKey().defaultRandom(),
   originalUrl: varchar('original_url', { length: 2048 }).notNull().unique(),
   originalTitle: varchar('original_title', { length: 500 }).notNull(),
@@ -21,7 +21,7 @@ export const newsArticles = pgTable('news_articles', {
 
 export const notionSaves = pgTable('notion_saves', {
   id: uuid('id').primaryKey().defaultRandom(),
-  articleId: uuid('article_id').notNull().references(() => newsArticles.id, { onDelete: 'cascade' }),
+  articleId: uuid('article_id').notNull().references(() => articles.id, { onDelete: 'cascade' }),
   notionPageId: varchar('notion_page_id', { length: 255 }).notNull(),
   savedAt: timestamp('saved_at').defaultNow().notNull(),
 })

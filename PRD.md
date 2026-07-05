@@ -110,7 +110,7 @@
 | description | text | 설명 (선택) |
 | created_at | timestamp | 생성일 |
 
-### `news_articles`
+### `articles`
 
 | 컬럼 | 타입 | 설명 |
 |------|------|------|
@@ -129,7 +129,7 @@
 | 컬럼 | 타입 | 설명 |
 |------|------|------|
 | id | uuid | PK |
-| article_id | uuid | FK → news_articles.id |
+| article_id | uuid | FK → articles.id |
 | notion_page_id | varchar | 생성된 Notion 페이지 ID |
 | saved_at | timestamp | 저장일 |
 
